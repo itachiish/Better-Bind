@@ -296,10 +296,11 @@ function addProfile() {
     const p = parseProfiles(settings.store.profiles);
     if (p.list.length >= MAX_PROFILES) return;
     if (p.list[p.active]) p.list[p.active].cfg = currentCfgFromFlat();
-    const copy: ProfileCfg = { ...currentCfgFromFlat() };
-    p.list.push({ name: `Profil ${p.list.length + 1}`, cfg: copy });
+    // Profil VIERGE : aucun bouton de commande (seul le @ s'affiche). À l'utilisateur de le remplir.
+    const blank: ProfileCfg = { buttons: "[]", ...BASE_CFG };
+    p.list.push({ name: `Profil ${p.list.length + 1}`, cfg: blank });
     p.active = p.list.length - 1;
-    applyCfgToFlat(copy);
+    applyCfgToFlat(blank);
     saveProfiles(p);
 }
 

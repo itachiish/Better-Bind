@@ -436,8 +436,36 @@
 }
 
 .bb-profile-edit .bb-profile-name {
-    flex: 1 1 auto;
-    min-width: 0;
+    flex: 0 1 220px;
+    max-width: 220px;
+}
+
+/* Champ "mana" blanc par défaut : on remet au thème + on enlève le soulignage. */
+.bb-profile-name,
+.bb-profile-name *,
+.bb-profile-name input {
+    background: var(--input-background, var(--background-secondary)) !important;
+    color: var(--text-normal) !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+.bb-profile-name::before,
+.bb-profile-name::after,
+.bb-profile-name *::before,
+.bb-profile-name *::after {
+    display: none !important;
+}
+
+.bb-profile-name input {
+    border: 1px solid var(--background-modifier-accent) !important;
+    border-radius: 8px;
+    padding: 6px 10px;
+}
+
+.bb-profile-name input::placeholder {
+    color: var(--text-muted) !important;
 }
 
 .bb-configio-version {
