@@ -379,6 +379,67 @@
     color: var(--text-muted);
 }
 
+/* ── Sélecteur de profils ───────────────────────────────────────────────────*/
+.bb-profiles {
+    margin: 4px 0 12px;
+}
+
+.bb-profile-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 6px 0;
+}
+
+.bb-profile-tab {
+    border: 1px solid var(--background-modifier-accent);
+    background: var(--background-tertiary);
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.bb-profile-tab:hover {
+    color: var(--text-normal);
+}
+
+.bb-profile-tab-active {
+    background: var(--brand-500, #5865f2);
+    color: #fff;
+    border-color: var(--brand-500, #5865f2);
+}
+
+.bb-profile-add {
+    border: 1px dashed var(--background-modifier-accent);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 15px;
+    font-weight: 700;
+    width: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.bb-profile-add:hover {
+    color: var(--text-normal);
+    border-color: var(--text-muted);
+}
+
+.bb-profile-edit {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.bb-profile-edit .bb-profile-name {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
 .bb-configio-version {
     display: flex;
     align-items: center;

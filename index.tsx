@@ -111,6 +111,59 @@ function parseButtons(json: string): ShortcutButton[] {
 }
 
 // ───────────────────────────────────────────────────────────────────────────
+// Profils (jusqu'à 5). Un profil = un jeu de réglages (boutons + modes).
+// Le profil ACTIF alimente les réglages "à plat" (buttons, mentionButton, ...)
+// que le rendu utilise. enabledGuilds (serveurs) reste hors profils (perso).
+// ───────────────────────────────────────────────────────────────────────────
+
+interface ProfileCfg {
+    buttons: string;
+    mentionButton: boolean;
+    mentionPosition: BarPosition;
+    mentionExcludeEveryone: boolean;
+    sendMode: string;
+}
+interface Profile { name: string; cfg: ProfileCfg; }
+interface ProfilesState { active: number; list: Profile[]; }
+
+const MAX_PROFILES = 5;
+
+// Ancienne config (profil 2 par défaut).
+const OLD_BUTTONS: ShortcutButton[] = [
+    { label: "$m", command: "$m", channelId: "", send: true, position: "above" },
+    { label: "$mk", command: "$mk", channelId: "", send: true, position: "above" },
+    { label: "$tu", command: "$tu", channelId: "", send: true, position: "above" },
+    { label: "$k", command: "$k", channelId: "", send: true, position: "above" },
+    { label: "$divorce", command: "$divorce", channelId: "", send: false, position: "above" },
+    { label: "$changeimg", command: "$changeimg", channelId: "", send: false, position: "above" }
+];
+
+const BASE_CFG: Omit<ProfileCfg, "buttons"> = {
+    mentionButton: true,
+    mentionPosition: "above",
+    mentionExcludeEveryone: true,
+    sendMode: "send"
+};
+
+const DEFAULT_PROFILES: ProfilesState = {
+    active: 0,
+    list: [
+        { name: "Profil 1", cfg: { buttons: JSON.stringify(DEFAULT_BUTTONS), ...BASE_CFG } },
+        { name: "Profil 2", cfg: { buttons: JSON.stringify(OLD_BUTTONS), ...BASE_CFG } }
+    ]
+};
+
+function parseProfiles(json: string): ProfilesState {
+    try {
+        const p = JSON.parse(json);
+        if (p && Array.isArray(p.list) && p.list.length && typeof p.active === "number") {
+            return p as ProfilesState;
+        }
+    } catch { /* fallback */ }
+    return DEFAULT_PROFILES;
+}
+
+// ───────────────────────────────────────────────────────────────────────────
 // Réglages
 // ───────────────────────────────────────────────────────────────────────────
 
@@ -195,8 +248,74 @@ const settings = definePluginSettings({
         type: OptionType.STRING,
         description: "Configuration JSON brute (avancé) — l'éditeur ci-dessus est plus simple",
         default: JSON.stringify(DEFAULT_BUTTONS)
+    },
+    profiles: {
+        type: OptionType.STRING,
+        description: "Profils (géré par le sélecteur de profils)",
+        default: JSON.stringify(DEFAULT_PROFILES),
+        hidden: true
     }
 });
+
+// ───────────────────────────────────────────────────────────────────────────
+// Helpers profils : le profil actif <-> les réglages "à plat".
+// ───────────────────────────────────────────────────────────────────────────
+
+function currentCfgFromFlat(): ProfileCfg {
+    return {
+        buttons: settings.store.buttons,
+        mentionButton: settings.store.mentionButton,
+        mentionPosition: settings.store.mentionPosition as BarPosition,
+        mentionExcludeEveryone: settings.store.mentionExcludeEveryone,
+        sendMode: settings.store.sendMode
+    };
+}
+
+function applyCfgToFlat(cfg: ProfileCfg) {
+    settings.store.buttons = cfg.buttons;
+    settings.store.mentionButton = cfg.mentionButton;
+    settings.store.mentionPosition = cfg.mentionPosition;
+    settings.store.mentionExcludeEveryone = cfg.mentionExcludeEveryone;
+    settings.store.sendMode = cfg.sendMode;
+}
+
+function saveProfiles(p: ProfilesState) {
+    settings.store.profiles = JSON.stringify(p);
+}
+
+function switchProfile(target: number) {
+    const p = parseProfiles(settings.store.profiles);
+    if (target === p.active || target < 0 || target >= p.list.length) return;
+    if (p.list[p.active]) p.list[p.active].cfg = currentCfgFromFlat(); // sauvegarde l'actif
+    applyCfgToFlat(p.list[target].cfg);                                // charge la cible
+    p.active = target;
+    saveProfiles(p);
+}
+
+function addProfile() {
+    const p = parseProfiles(settings.store.profiles);
+    if (p.list.length >= MAX_PROFILES) return;
+    if (p.list[p.active]) p.list[p.active].cfg = currentCfgFromFlat();
+    const copy: ProfileCfg = { ...currentCfgFromFlat() };
+    p.list.push({ name: `Profil ${p.list.length + 1}`, cfg: copy });
+    p.active = p.list.length - 1;
+    applyCfgToFlat(copy);
+    saveProfiles(p);
+}
+
+function deleteActiveProfile() {
+    const p = parseProfiles(settings.store.profiles);
+    if (p.list.length <= 1) return;
+    p.list.splice(p.active, 1);
+    p.active = 0;
+    applyCfgToFlat(p.list[0].cfg);
+    saveProfiles(p);
+}
+
+function renameActiveProfile(name: string) {
+    const p = parseProfiles(settings.store.profiles);
+    if (p.list[p.active]) { p.list[p.active].name = name; saveProfiles(p); }
+}
 
 // Clés incluses dans l'import/export de config. On EXCLUT volontairement
 // "enabledGuilds" : la sélection de serveurs est personnelle (et contient des IDs).
@@ -231,7 +350,11 @@ function ConfigIO() {
 
     return (
         <section className="bb-configio">
-            <SectionHeader title="Config du plugin" subtitle="Exporter = génère le texte de ta config dans la zone. Importer = colle un texte de config dans la zone puis applique-le." first />
+            <SectionHeader title="Config du plugin" subtitle="Choisis un profil, puis Exporter/Importer agit sur LE profil actif." first />
+
+            <ProfileSwitcher />
+
+            <span className="bb-field-label">Exporter / Importer le profil actif</span>
             <div className="bb-configio-actions">
                 <Button size={Button.Sizes.SMALL} color={Button.Colors.BRAND} onClick={exportConfig}>Exporter</Button>
                 <Button size={Button.Sizes.SMALL} color={Button.Colors.PRIMARY} onClick={importConfig}>Importer</Button>
@@ -245,6 +368,46 @@ function ConfigIO() {
                 rows={3}
             />
         </section>
+    );
+}
+
+// Sélecteur de profils : onglets pour switcher + renommer/ajouter/supprimer (max 5).
+function ProfileSwitcher() {
+    const { profiles } = settings.use(["profiles"]);
+    const p = parseProfiles(profiles);
+
+    return (
+        <div className="bb-profiles">
+            <span className="bb-field-label">Profil actif</span>
+            <div className="bb-profile-tabs">
+                {p.list.map((prof, i) => (
+                    <button
+                        key={i}
+                        type="button"
+                        className={"bb-profile-tab" + (i === p.active ? " bb-profile-tab-active" : "")}
+                        onClick={() => switchProfile(i)}
+                    >
+                        {prof.name || `Profil ${i + 1}`}
+                    </button>
+                ))}
+                {p.list.length < MAX_PROFILES && (
+                    <button type="button" className="bb-profile-add" title="Ajouter un profil" onClick={addProfile}>+</button>
+                )}
+            </div>
+            <div className="bb-profile-edit">
+                <TextInput
+                    className="bb-profile-name"
+                    placeholder="Nom du profil"
+                    value={p.list[p.active]?.name ?? ""}
+                    onChange={(v: string) => renameActiveProfile(v)}
+                />
+                {p.list.length > 1 && (
+                    <Button size={Button.Sizes.SMALL} color={Button.Colors.RED} onClick={deleteActiveProfile}>
+                        Supprimer ce profil
+                    </Button>
+                )}
+            </div>
+        </div>
     );
 }
 

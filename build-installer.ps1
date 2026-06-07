@@ -145,27 +145,13 @@ Write-Host ""
 Read-Host "Appuyez sur Entree pour fermer"
 '@
 
-# --- Bake la config ACTUELLE de l'auteur (sauf enabledGuilds = perso) ---
-Write-Host "3b) Lecture de la config de l'auteur..." -ForegroundColor Cyan
-$cfgKeys = "buttons", "mentionButton", "mentionPosition", "mentionExcludeEveryone", "sendMode"
-$authorSettings = Join-Path $env:APPDATA "Vencord\settings\settings.json"
-$bb = [ordered]@{ enabled = $true }
-if (Test-Path $authorSettings) {
-    try {
-        $st = Get-Content $authorSettings -Raw | ConvertFrom-Json
-        $mine = $st.plugins.'Better-Bind'
-        foreach ($k in $cfgKeys) {
-            if ($mine -and ($null -ne $mine.$k)) { $bb[$k] = $mine.$k }
-        }
-    } catch { Write-Host "   (config auteur illisible, defauts du build utilises)" -ForegroundColor Yellow }
-}
-$bbEntry = '"Better-Bind":' + ($bb | ConvertTo-Json -Compress -Depth 10)
-$bbEntryEsc = $bbEntry -replace "'", "''"   # echappe pour la chaine single-quote de installer.ps1
-Write-Host "   config bakee : $($bb.Keys.Count) cle(s) (boutons inclus = $($bb.Contains('buttons')))." -ForegroundColor Green
+# L'installeur active juste le plugin. La config par DEFAUT vient du build
+# (profil 1 = config actuelle de l'auteur, profil 2 = ancienne config), figee dans le code.
+$bbEntry = '"Better-Bind":{"enabled":true}'
 
-# Injecte le payload base64 + remplit le placeholder de config
+# Injecte le payload base64 + remplit le placeholder
 $final = "`$PAYLOAD = '$b64'`r`n" + $template
-$final = $final.Replace('<<BB_ENTRY>>', $bbEntryEsc)
+$final = $final.Replace('<<BB_ENTRY>>', $bbEntry)
 Set-Content -Path $ps1Out -Value $final -Encoding UTF8
 Write-Host "   installer.ps1 ecrit ($([math]::Round((Get-Item $ps1Out).Length/1KB)) Ko)." -ForegroundColor Green
 
