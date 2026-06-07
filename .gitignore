@@ -1,0 +1,7 @@
+# Artefacts générés
+build/
+node_modules/
+*.exe
+
+# Config locale Claude Code
+.claude/

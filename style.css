@@ -1,0 +1,457 @@
+/* Better-Bind — styles de la barre de raccourcis */
+
+/* ── Mode "au-dessus" ───────────────────────────────────────────────────────
+ * Hôte flottant (position:fixed) sur <body>, calé par-dessus, juste au-dessus
+ * du formulaire de saisie. Sa position (left/width/bottom) est calculée en JS
+ * d'après la position réelle du <form>. Jamais rogné par un ancêtre. */
+.bb-above-host {
+    position: fixed;
+    z-index: 100;
+    box-sizing: border-box;
+    padding: 0 16px;
+    /* Aligne la barre à DROITE (au-dessus des icônes de la zone de saisie). */
+    display: flex;
+    justify-content: flex-end;
+    /* L'hôte laisse passer les clics ; seuls les boutons sont cliquables. */
+    pointer-events: none;
+}
+
+.bb-toolbar {
+    display: flex;
+    flex-direction: column;     /* overflow (haut) puis ligne du bas */
+    align-items: flex-end;      /* tout aligné à droite */
+    gap: 6px;
+    max-width: 100%;
+    background: transparent;
+    /* IMPORTANT : les conteneurs laissent passer les clics (sinon le grand rectangle
+     * vide au-dessus des messages les bloquerait). Seuls les boutons sont cliquables. */
+    pointer-events: none;
+}
+
+/* Surplus : colonne verticale à droite qui croît VERS LE HAUT. */
+.bb-toolbar-overflow {
+    display: flex;
+    flex-direction: column-reverse; /* 1er surplus en bas, les suivants au-dessus */
+    align-items: flex-end;
+    gap: 6px;
+    pointer-events: none;
+}
+
+/* Ligne du bas : horizontale, @ à la fin (droite). */
+.bb-toolbar-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    pointer-events: none;
+}
+
+/* Seuls les boutons (et le @) captent les clics. */
+.bb-btn-wrap {
+    display: inline-flex;
+    pointer-events: auto;
+}
+
+/* Bouton @ : fixe en bas à droite, ne rétrécit jamais. */
+.bb-toolbar-mention {
+    display: inline-flex;
+    flex: 0 0 auto;
+    pointer-events: auto;
+}
+
+.bb-toolbar .bb-button {
+    min-height: 24px;
+    height: auto;
+    padding: 2px 10px;
+    font-size: 13px;
+    line-height: 16px;
+    border-radius: 6px;
+}
+
+/* ── Bouton « @ » (mentions) + badge compteur ───────────────────────────────*/
+.bb-mention-button {
+    font-weight: 700;
+}
+
+.bb-mention-iconrow {
+    display: inline-flex;
+    align-items: center;
+}
+
+.bb-mention-badge {
+    margin-left: 3px;
+    min-width: 14px;
+    height: 14px;
+    padding: 0 4px;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    color: #fff;
+    background: var(--status-danger, #f23f43);
+    border-radius: 7px;
+    vertical-align: super;
+}
+
+/* ── Mode "rangée d'icônes" ──────────────────────────────────────────────────
+ * Libellé court rendu dans le bouton ChatBarButton (taille fixe ~24px). */
+.bb-iconrow-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+    padding: 0 2px;
+}
+
+/* ── Éditeur de configuration (paramètres) ──────────────────────────────────*/
+.bb-editor {
+    display: block;
+}
+
+.bb-editor-help {
+    margin-bottom: 12px;
+}
+
+/* Carte d'un bouton */
+.bb-editor-card {
+    margin-bottom: 12px;
+    padding: 12px 14px 14px;
+    border: 1px solid var(--background-modifier-accent);
+    border-radius: 10px;
+    background: var(--background-secondary-alt, var(--background-secondary));
+}
+
+.bb-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.bb-card-index {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--header-secondary, var(--text-muted));
+}
+
+.bb-card-delete {
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.bb-card-delete:hover {
+    background: var(--status-danger, #f23f43);
+    color: #fff;
+}
+
+/* Grille des champs texte (2 colonnes, responsive) */
+.bb-editor-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 12px;
+}
+
+.bb-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.bb-field-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--header-secondary, var(--text-muted));
+}
+
+.bb-field > div,
+.bb-field input {
+    width: 100%;
+}
+
+/* Pied de carte : emplacement + envoi direct */
+.bb-editor-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--background-modifier-accent);
+}
+
+.bb-footer-switch {
+    margin-left: auto;
+}
+
+/* Contrôle segmenté (Au-dessus / Rangée d'icônes) */
+.bb-seg {
+    display: inline-flex;
+    border: 1px solid var(--background-modifier-accent);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--background-tertiary);
+}
+
+.bb-seg-opt {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.bb-seg-opt:not(:last-child) {
+    border-right: 1px solid var(--background-modifier-accent);
+}
+
+.bb-seg-active {
+    background: var(--brand-500, #5865f2);
+    color: #fff;
+}
+
+.bb-add-btn {
+    margin-top: 4px;
+}
+
+/* Drag & drop des cartes */
+.bb-drag-handle {
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+    color: var(--text-muted);
+    font-size: 15px;
+    line-height: 1;
+    padding: 0 6px 0 0;
+    margin-right: 2px;
+}
+
+.bb-drag-handle:active {
+    cursor: grabbing;
+}
+
+.bb-card-head {
+    /* la poignée vient en premier, l'index suit */
+    gap: 4px;
+}
+
+.bb-card-index {
+    margin-right: auto;
+}
+
+.bb-editor-card.bb-dragging {
+    opacity: 0.5;
+}
+
+.bb-editor-card.bb-drop-target {
+    border-color: var(--brand-500, #5865f2);
+    box-shadow: inset 0 2px 0 0 var(--brand-500, #5865f2);
+}
+
+/* Import/Export de la config du plugin */
+.bb-configio-actions {
+    display: flex;
+    gap: 8px;
+    margin: 6px 0 4px;
+}
+
+/* ── En-têtes de section (réglages) ─────────────────────────────────────────*/
+.bb-section {
+    margin-top: 18px;
+}
+
+/* Section qui continue le groupe précédent : rapprochée, sans séparateur. */
+.bb-section-grouped {
+    margin-top: 14px;
+}
+
+/* Trait de séparation entre catégories — centré dans l'espace, couleur garantie visible. */
+.bb-divider {
+    height: 1px;
+    width: 100%;
+    background: rgba(128, 128, 128, 0.35);
+    border: 0;
+    margin: 0 0 18px;
+}
+
+.bb-section-title {
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--header-secondary, var(--text-muted));
+    font-size: 12px !important;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.bb-section-sub {
+    color: var(--text-muted);
+    font-size: 12px;
+    margin-bottom: 2px;
+}
+
+.bb-section-sub > div {
+    margin: 2px 0;
+    line-height: 1.35;
+}
+
+/* ── Sélecteur de serveurs ──────────────────────────────────────────────────*/
+.bb-guilds {
+    display: block;
+    margin-bottom: 12px;
+}
+
+.bb-guilds-search {
+    margin: 8px 0;
+}
+
+/* Champ de recherche "mana" : fond blanc + soulignage par défaut -> on remet au thème
+ * et on enlève toute bordure/soulignage/ombre parasite. */
+.bb-guilds-search,
+.bb-guilds-search *,
+.bb-guilds-search input {
+    background: var(--input-background, var(--background-secondary)) !important;
+    color: var(--text-normal) !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    text-decoration: none !important;
+}
+
+.bb-guilds-search::before,
+.bb-guilds-search::after,
+.bb-guilds-search *::before,
+.bb-guilds-search *::after {
+    display: none !important;
+}
+
+.bb-guilds-search input {
+    border: 1px solid var(--input-border, var(--background-modifier-accent)) !important;
+    border-radius: 8px;
+    padding: 8px 10px;
+}
+
+.bb-guilds-search input::placeholder {
+    color: var(--text-muted) !important;
+}
+
+/* Zone de texte import/export — contour bien visible. */
+.bb-configio-text {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 72px;
+    resize: vertical;
+    margin: 10px 0 0;
+    padding: 10px 12px;
+    font-family: var(--font-code, monospace);
+    font-size: 12px;
+    color: var(--text-normal);
+    background: var(--background-tertiary, var(--background-secondary));
+    border: 1px solid rgba(128, 128, 128, 0.4) !important;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+.bb-configio-text:focus {
+    border-color: var(--brand-500, #5865f2) !important;
+}
+
+.bb-configio-text::placeholder {
+    color: var(--text-muted);
+}
+
+.bb-configio-version {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.bb-guilds-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.bb-guilds-count {
+    color: var(--text-muted);
+    font-size: 12px;
+    margin-left: auto;
+}
+
+.bb-guilds-list {
+    max-height: 280px;
+    overflow-y: auto;
+    border: 1px solid var(--background-modifier-accent);
+    border-radius: 8px;
+    padding: 4px;
+}
+
+.bb-guild-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.bb-guild-row:hover {
+    background: var(--background-modifier-hover);
+}
+
+.bb-guild-check {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--brand-500, #5865f2);
+}
+
+.bb-guild-icon {
+    flex: 0 0 auto;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--background-tertiary);
+    object-fit: cover;
+}
+
+.bb-guild-acronym {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-normal);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.bb-guild-name {
+    color: var(--text-normal);
+    font-size: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
