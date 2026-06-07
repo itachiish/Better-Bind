@@ -10,12 +10,10 @@
 import "./style.css";
 
 import { addChatBarButton, ChatBarButton, ChatBarButtonFactory, removeChatBarButton } from "@api/ChatButtons";
-import { showNotification } from "@api/Notifications";
 import { definePluginSettings } from "@api/Settings";
 import { FormSwitch } from "@components/FormSwitch";
 import { insertTextIntoChatInputBox, sendMessage } from "@utils/discord";
-import { relaunch } from "@utils/native";
-import definePlugin, { IconComponent, OptionType, PluginNative } from "@utils/types";
+import definePlugin, { IconComponent, OptionType } from "@utils/types";
 import {
     Button,
     ChannelStore,
@@ -98,41 +96,6 @@ function parseButtons(json: string): ShortcutButton[] {
     } catch {
         // JSON invalide : on n'affiche rien plutôt que de casser le chat.
         return [];
-    }
-}
-
-// ───────────────────────────────────────────────────────────────────────────
-// Auto-updateur (build combiné téléchargé depuis GitHub)
-// ───────────────────────────────────────────────────────────────────────────
-
-const BUILD_VERSION = 1; // ⬅ à incrémenter à chaque publication (doit matcher version.json)
-
-const Native = VencordNative.pluginHelpers["Better-Bind"] as PluginNative<typeof import("./native")>;
-
-async function checkForUpdates(manual = false) {
-    try {
-        const remote = await Native.getRemoteVersion();
-        if (remote == null) {
-            if (manual) toast("Impossible de vérifier les mises à jour.", Toasts.Type.FAILURE);
-            return;
-        }
-        if (remote <= BUILD_VERSION) {
-            if (manual) toast("Better-Bind est à jour ✅", Toasts.Type.SUCCESS);
-            return;
-        }
-        const ok = await Native.downloadUpdate();
-        if (!ok) {
-            if (manual) toast("Échec du téléchargement de la mise à jour.", Toasts.Type.FAILURE);
-            return;
-        }
-        showNotification({
-            title: "Better-Bind — mise à jour prête",
-            body: "Clique ici pour recharger Discord et appliquer la nouvelle version.",
-            permanent: true,
-            onClick: relaunch
-        });
-    } catch {
-        if (manual) toast("Erreur lors de la vérification des mises à jour.", Toasts.Type.FAILURE);
     }
 }
 
@@ -270,12 +233,6 @@ function ConfigIO() {
                 spellCheck={false}
                 rows={3}
             />
-            <div className="bb-configio-version">
-                <span>Version {BUILD_VERSION}</span>
-                <Button size={Button.Sizes.SMALL} color={Button.Colors.PRIMARY} onClick={() => checkForUpdates(true)}>
-                    Vérifier les mises à jour
-                </Button>
-            </div>
         </section>
     );
 }
@@ -990,7 +947,6 @@ export default definePlugin({
 
     start() {
         addChatBarButton("better-bind", ChatBarButtons, BBIcon);
-        checkForUpdates(); // vérifie GitHub au démarrage (notif si MAJ dispo)
     },
 
     stop() {

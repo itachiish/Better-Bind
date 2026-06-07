@@ -20,9 +20,9 @@ if (-not $m.Success) { throw "BUILD_VERSION introuvable dans index.tsx" }
 $ver = [int]$m.Groups[1].Value
 Write-Host "Publication de la version $ver..." -ForegroundColor Cyan
 
-# 2. Build
+# 2. Build (--disable-updater : masque la page Updater Vencord cassée chez nous)
 Set-Location $venc
-pnpm build | Out-Null
+pnpm build --disable-updater | Out-Null
 
 # 3. Copier les fichiers runtime du build -> proj\dist
 $dist = Join-Path $proj "dist"
