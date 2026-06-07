@@ -95,27 +95,30 @@ try {
     $sf = Join-Path $sd "settings.json"
     New-Item -ItemType Directory -Force -Path $sd | Out-Null
 
-    $entry = '"Better-Bind":{"enabled":true}'
+    # $entry = l'objet "Better-Bind":{...} avec la config de l'auteur (bake a la generation).
+    $entry = '<<BB_ENTRY>>'
     if (-not (Test-Path $sf) -or [string]::IsNullOrWhiteSpace((Get-Content $sf -Raw))) {
-        # Aucune config : on ecrit une config complete.
-        # IMPORTANT : inclure "uiElements" (sinon le rendu de la barre de boutons
-        # plante car Vencord lit uiElements.chatBarButtons[...]). On active aussi
-        # explicitement notre bouton, et l'auto-update (l'updater pointe sur le depot).
-        $fresh = '{"autoUpdate":true,"autoUpdateNotification":true,"plugins":{"Better-Bind":{"enabled":true}},"uiElements":{"chatBarButtons":{"better-bind":{"enabled":true}},"messagePopoverButtons":{}}}'
+        # Aucune config : config complete. "uiElements" OBLIGATOIRE (sinon la barre plante).
+        $fresh = '{"autoUpdate":true,"autoUpdateNotification":true,"plugins":{' + $entry + '},"uiElements":{"chatBarButtons":{"better-bind":{"enabled":true}},"messagePopoverButtons":{}}}'
         Set-Content $sf $fresh -Encoding UTF8 -NoNewline
-        Ok "Config creee, plugin active"
+        Ok "Config creee (config de l'auteur appliquee)"
     } else {
         $raw = Get-Content $sf -Raw
         if ($raw -match '"Better-Bind"') {
             Ok "Plugin deja present (config inchangee)"
-        } elseif ($raw -match '"plugins"\s*:\s*\{\s*\}') {
-            ($raw -replace '("plugins"\s*:\s*\{)\s*\}', ('$1' + $entry + '}')) | Set-Content $sf -Encoding UTF8 -NoNewline
-            Ok "Plugin active (config preservee)"
-        } elseif ($raw -match '"plugins"\s*:\s*\{') {
-            ($raw -replace '("plugins"\s*:\s*\{)', ('$1' + $entry + ',')) | Set-Content $sf -Encoding UTF8 -NoNewline
-            Ok "Plugin active (config preservee)"
         } else {
-            Warn "Format de config inattendu : active 'Better-Bind' manuellement dans Parametres > Vencord > Plugins."
+            # Insertion LITTERALE (pas de regex : les commandes contiennent des '$').
+            $i = $raw.IndexOf('"plugins"')
+            $b = if ($i -ge 0) { $raw.IndexOf('{', $i) } else { -1 }
+            if ($b -lt 0) {
+                Warn "Format de config inattendu : active 'Better-Bind' manuellement dans Parametres > Vencord > Plugins."
+            } else {
+                $rest = $raw.Substring($b + 1)
+                $sep = if ($rest.TrimStart().StartsWith('}')) { '' } else { ',' }
+                $new = $raw.Substring(0, $b + 1) + $entry + $sep + $rest
+                Set-Content $sf $new -Encoding UTF8 -NoNewline
+                Ok "Plugin active (config de l'auteur appliquee, reste preserve)"
+            }
         }
     }
 
@@ -142,8 +145,27 @@ Write-Host ""
 Read-Host "Appuyez sur Entree pour fermer"
 '@
 
-# Injecte le payload base64 en tete (chaine simple-quote = aucun risque d'interpolation)
+# --- Bake la config ACTUELLE de l'auteur (sauf enabledGuilds = perso) ---
+Write-Host "3b) Lecture de la config de l'auteur..." -ForegroundColor Cyan
+$cfgKeys = "buttons", "mentionButton", "mentionPosition", "mentionExcludeEveryone", "sendMode"
+$authorSettings = Join-Path $env:APPDATA "Vencord\settings\settings.json"
+$bb = [ordered]@{ enabled = $true }
+if (Test-Path $authorSettings) {
+    try {
+        $st = Get-Content $authorSettings -Raw | ConvertFrom-Json
+        $mine = $st.plugins.'Better-Bind'
+        foreach ($k in $cfgKeys) {
+            if ($mine -and ($null -ne $mine.$k)) { $bb[$k] = $mine.$k }
+        }
+    } catch { Write-Host "   (config auteur illisible, defauts du build utilises)" -ForegroundColor Yellow }
+}
+$bbEntry = '"Better-Bind":' + ($bb | ConvertTo-Json -Compress -Depth 10)
+$bbEntryEsc = $bbEntry -replace "'", "''"   # echappe pour la chaine single-quote de installer.ps1
+Write-Host "   config bakee : $($bb.Keys.Count) cle(s) (boutons inclus = $($bb.Contains('buttons')))." -ForegroundColor Green
+
+# Injecte le payload base64 + remplit le placeholder de config
 $final = "`$PAYLOAD = '$b64'`r`n" + $template
+$final = $final.Replace('<<BB_ENTRY>>', $bbEntryEsc)
 Set-Content -Path $ps1Out -Value $final -Encoding UTF8
 Write-Host "   installer.ps1 ecrit ($([math]::Round((Get-Item $ps1Out).Length/1KB)) Ko)." -ForegroundColor Green
 
