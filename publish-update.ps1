@@ -10,7 +10,10 @@
 #    2. VERIFIE que le plugin compile encore (pnpm exec tsc --noEmit) et teste.
 #    3. Puis lance ce script normalement.
 # ============================================================================
-$ErrorActionPreference = "Stop"
+# Mode souple : les commandes natives (pnpm/git/gh) écrivent des warnings sur stderr
+# qui, en mode "Stop", seraient pris pour des erreurs fatales. Le garde-fou type-check
+# (plus bas) protège contre du code cassé.
+$ErrorActionPreference = "Continue"
 
 $proj = "C:\Users\itachi\Desktop\Dev\Bot DC\Better-Bind"
 $venc = "C:\Users\itachi\Desktop\Dev\Vencord"
