@@ -64,14 +64,25 @@ function btnPos(b: ShortcutButton): BarPosition {
 }
 
 const DEFAULT_BUTTONS: ShortcutButton[] = [
-    // Tous dans le salon courant (channelId vide).
-    { label: "$m", command: "$m", channelId: "", send: true, tooltip: "Roll Mudae ($m)" },
-    { label: "$mk", command: "$mk", channelId: "", send: true, tooltip: "Kakera ($mk)" },
-    { label: "$tu", command: "$tu", channelId: "", send: true },
-    { label: "$k", command: "$k", channelId: "", send: true },
-    // $divorce et $changeimg en pré-remplissage (send: false).
-    { label: "$divorce", command: "$divorce", channelId: "", send: false },
-    { label: "$changeimg", command: "$changeimg", channelId: "", send: false }
+    // Tous dans le salon courant (channelId vide), emplacement "au-dessus".
+    { label: "$wishremove", command: "$wishremove", channelId: "", send: false, position: "above" },
+    { label: "$wishlist", command: "$wishlist", channelId: "", send: true, position: "above" },
+    { label: "$mmi", command: "$mmi", channelId: "", send: true, position: "above" },
+    { label: "$im", command: "$im", channelId: "", send: false, position: "above" },
+    { label: "$changeimg", command: "$changeimg", channelId: "", send: false, position: "above" },
+    { label: "$divorce", command: "$divorce", channelId: "", send: false, position: "above" },
+    { label: "$k", command: "$k", channelId: "", send: true, position: "above" },
+    { label: "$dk", command: "$dk", channelId: "", send: true, position: "above" },
+    { label: "$kl", command: "$kl", channelId: "", send: true, position: "above" },
+    { label: "$tu", command: "$tu", channelId: "", send: true, position: "above" },
+    { label: "$mk", command: "$mk", channelId: "", send: true, tooltip: "Kakera ($mk)", position: "above" },
+    { label: "$m", command: "$m", channelId: "", send: true, tooltip: "Roll Mudae ($m)", position: "above" },
+    { label: "$wish", command: "$wish", channelId: "", send: false, position: "above" },
+    { label: "$vote", command: "$vote", channelId: "", send: true, position: "above" },
+    { label: "$rt", command: "$rt", channelId: "", send: true, tooltip: "Reset Claim", position: "above" },
+    { label: "$tuto", command: "$tuto", channelId: "", send: true, position: "above" },
+    { label: "o", command: "o", channelId: "", send: true, position: "above" },
+    { label: "$rolls", command: "$rolls", channelId: "", send: true, position: "above" }
 ];
 
 // Aucun serveur activé par défaut : chacun choisit les siens via le sélecteur.

@@ -97,8 +97,12 @@ try {
 
     $entry = '"Better-Bind":{"enabled":true}'
     if (-not (Test-Path $sf) -or [string]::IsNullOrWhiteSpace((Get-Content $sf -Raw))) {
-        # Aucune config : on en cree une minimale (build perso -> updater off).
-        Set-Content $sf ('{"autoUpdate":false,"autoUpdateNotification":false,"plugins":{' + $entry + '}}') -Encoding UTF8 -NoNewline
+        # Aucune config : on ecrit une config complete.
+        # IMPORTANT : inclure "uiElements" (sinon le rendu de la barre de boutons
+        # plante car Vencord lit uiElements.chatBarButtons[...]). On active aussi
+        # explicitement notre bouton, et l'auto-update (l'updater pointe sur le depot).
+        $fresh = '{"autoUpdate":true,"autoUpdateNotification":true,"plugins":{"Better-Bind":{"enabled":true}},"uiElements":{"chatBarButtons":{"better-bind":{"enabled":true}},"messagePopoverButtons":{}}}'
+        Set-Content $sf $fresh -Encoding UTF8 -NoNewline
         Ok "Config creee, plugin active"
     } else {
         $raw = Get-Content $sf -Raw
